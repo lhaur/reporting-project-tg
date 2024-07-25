@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="fi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Daily Telegram Reports</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #fff;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        text-align: center;
+        color: #2c3e50;
+      }
+      .filter-section {
+        margin-bottom: 20px;
+        padding: 15px;
+        background-color: #ecf0f1;
+        border-radius: 5px;
+      }
+      .date-inputs {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
+      }
+      .date-inputs label {
+        flex-basis: 48%;
+      }
+      input[type="date"] {
+        width: 100%;
+        padding: 5px;
+        margin-top: 5px;
+      }
+      button {
+        display: block;
+        width: 100%;
+        padding: 10px;
+        background-color: #3498db;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+      }
+      button:hover {
+        background-color: #2980b9;
+      }
+      .expander {
+        border: 1px solid #ddd;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        overflow: hidden;
+      }
+      .expander-header {
+        background-color: #f1f1f1;
+        padding: 10px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+      .expander-content {
+        display: none;
+        padding: 10px;
+        background-color: #fff;
+      }
+      #summary {
+        text-align: center;
+        margin: 20px 0;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Daily Telegram Reports</h1>
+
+      <div class="filter-section">
+        <label>
+          <input type="checkbox" id="useDateFilter" /> Use date filter
+        </label>
+
+        <div id="dateInputs" style="display: none" class="date-inputs">
+          <label for="startDate">
+            Start Date:
+            <input type="date" id="startDate" />
+          </label>
+
+          <label for="endDate">
+            End Date:
+            <input type="date" id="endDate" />
+          </label>
+        </div>
+      </div>
+
+      <button id="fetchReports">Get Daily Reports</button>
+
+      <div id="summary"></div>
+      <div id="reports"></div>
+    </div>
+
+    <script>
+      const API_URL = "/api/daily_reports";
+
+      document
+        .getElementById("useDateFilter")
+        .addEventListener("change", function () {
+          document.getElementById("dateInputs").style.display = this.checked
+            ? "block"
+            : "none";
+        });
+
+      document
+        .getElementById("fetchReports")
+        .addEventListener("click", fetchDailyReports);
+
+      async function fetchDailyReports() {
+        const useDateFilter = document.getElementById("useDateFilter").checked;
+        let params = new URLSearchParams();
+
+        if (useDateFilter) {
+          const startDateInput = document.getElementById("startDate").value;
+          const endDateInput = document.getElementById("endDate").value;
+
+          if (startDateInput) {
+            const startDate = new Date(startDateInput);
+            if (!isNaN(startDate.getTime())) {
+              startDate.setHours(0, 0, 0, 0);
+              params.append("startdate", startDate.toISOString());
+            } else {
+              document.getElementById("summary").innerHTML =
+                "Invalid start date.";
+              return;
+            }
+          }
+
+          if (endDateInput) {
+            const endDate = new Date(endDateInput);
+            if (!isNaN(endDate.getTime())) {
+              endDate.setHours(23, 59, 59, 999);
+              params.append("enddate", endDate.toISOString());
+            } else {
+              document.getElementById("summary").innerHTML =
+                "Invalid end date.";
+              return;
+            }
+          }
+
+          if (!startDateInput && !endDateInput) {
+            document.getElementById("summary").innerHTML =
+              "Enter at least 1 date.";
+            return;
+          }
+        }
+
+        try {
+          const response = await fetch(`${API_URL}?${params}`);
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const reports = await response.json();
+          displayDailyReports(reports);
+        } catch (error) {
+          console.error("Error fetching daily reports:", error);
+          document.getElementById(
+            "summary"
+          ).innerHTML = `Error fetching daily reports: ${error.message}`;
+        }
+      }
+
+      function displayDailyReports(reports) {
+        const summaryElement = document.getElementById("summary");
+        const reportsElement = document.getElementById("reports");
+
+        if (reports.length > 0) {
+          reports.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+          summaryElement.innerHTML = `Overall ${reports.length} daily reports`;
+          reportsElement.innerHTML = reports
+            .map((report, index) => {
+              const date = new Date(report.timestamp);
+              const formattedDate = `${date.getFullYear()}-${String(
+                date.getMonth() + 1
+              ).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+
+              return `
+                        <div class="expander">
+                            <div class="expander-header" onclick="toggleExpander(this)">
+                                Daily Report ${formattedDate} (${
+                report.report_count
+              } reports)
+                            </div>
+                            <div class="expander-content">
+                                <p><strong>Summary:</strong> ${
+                                  report.summary
+                                }</p>
+                                <p><strong>Report Count:</strong> ${
+                                  report.report_count
+                                }</p>
+                                <p><strong>Start Date:</strong> ${new Date(
+                                  report.start_date
+                                ).toLocaleString()}</p>
+                                <p><strong>End Date:</strong> ${new Date(
+                                  report.end_date
+                                ).toLocaleString()}</p>
+                            </div>
+                        </div>
+                    `;
+            })
+            .join("");
+        } else {
+          summaryElement.innerHTML =
+            "No daily reports for the selected period.";
+          reportsElement.innerHTML = "";
+        }
+      }
+
+      function toggleExpander(header) {
+        const content = header.nextElementSibling;
+        content.style.display =
+          content.style.display === "block" ? "none" : "block";
+      }
+    </script>
+  </body>
+</html>

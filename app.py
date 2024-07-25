@@ -4,6 +4,8 @@ from pymongo import MongoClient
 from bson import ObjectId
 import os
 from datetime import datetime, timedelta
+from langchain_openai import ChatOpenAI
+from langchain_core.prompts.prompt import PromptTemplate
 
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
@@ -16,8 +18,11 @@ db = client['telegram_bot']
 reports_collection = db['reports']
 daily_reports_collection = db['daily_reports']
 
-def process_with_llm(input):
-    return input
+def process_with_llm(reports_str):
+    llm = ChatOpenAI(api_key=os.environ.get('OPENAI_API_KEY', "default"), model=os.environ.get("OPENAI_MODEL", "gpt-4o-mini"))
+    prompt = PromptTemplate.from_template("Generate daily report from these activities: {reports}")
+    question = prompt.format(reports=reports_str)
+    return llm.invoke(question).content
 
 @app.route('/api/reports', methods=['POST'])
 def create_report():
@@ -33,6 +38,10 @@ def create_report():
 @app.route('/', methods=['GET'])
 def index():
     return render_template('index.html')
+
+@app.route('/daily', methods=['GET'])
+def daily():
+    return render_template('daily_reports.html')
 
 @app.route('/api/reports', methods=['GET'])
 def get_reports():
@@ -79,12 +88,18 @@ def generate_daily_report():
     
     reports = list(reports_collection.find(query).sort('timestamp', -1))
     
-    formatted_data = "\n".join([f"Raportti {i+1}: {report['content']}" for i, report in enumerate(reports)])
+    formatted_data = []
+    for i, report in enumerate(reports):
+        report_content = "Raportti {}: ".format(i+1)
+        for key, value in report.items():
+            if key not in ['_id']:
+                report_content += f"{key}: {value}, "
+        formatted_data.append(report_content.rstrip(', '))
     
-    prompt = f"Luo yhteenveto seuraavista raporteista viimeisen 24 tunnin ajalta:\n\n{formatted_data}"
-    summary = process_with_llm(prompt)
+    formatted_data = "\n".join(formatted_data)
+    print(formatted_data)
+    summary = process_with_llm(formatted_data)
     
-    # Luo ja tallenna päivittäinen raportti
     daily_report = {
         "timestamp": end_date,
         "summary": summary,
