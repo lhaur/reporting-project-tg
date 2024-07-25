@@ -25,21 +25,108 @@
         text-align: center;
         color: #2c3e50;
       }
-      .navbar {
-        background-color: #333;
+      .filter-section {
+        margin-bottom: 20px;
+        padding: 15px;
+        background-color: #ecf0f1;
+        border-radius: 5px;
+      }
+      .date-inputs {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
+      }
+      .date-inputs label {
+        flex-basis: 48%;
+      }
+      input[type="date"] {
+        width: 100%;
+        padding: 5px;
+        margin-top: 5px;
+      }
+      button {
+        display: block;
+        width: 100%;
+        padding: 10px;
+        background-color: #3498db;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+      }
+      button:hover {
+        background-color: #2980b9;
+      }
+      .expander {
+        border: 1px solid #ddd;
+        margin-bottom: 10px;
+        border-radius: 5px;
         overflow: hidden;
       }
+      .expander-header {
+        background-color: #f1f1f1;
+        padding: 10px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+      .expander-content {
+        display: none;
+        padding: 10px;
+        background-color: #fff;
+      }
+      .expander-content h1,
+      .expander-content h2,
+      .expander-content h3 {
+        margin-top: 10px;
+        margin-bottom: 5px;
+      }
+      .expander-content p {
+        margin-bottom: 10px;
+      }
+      .expander-content ul,
+      .expander-content ol {
+        margin-left: 20px;
+        margin-bottom: 10px;
+      }
+      .expander-content pre {
+        background-color: #f4f4f4;
+        padding: 10px;
+        border-radius: 5px;
+        overflow-x: auto;
+      }
+      .expander-content code {
+        font-family: monospace;
+        background-color: #f4f4f4;
+        padding: 2px 4px;
+        border-radius: 3px;
+      }
+      .navbar {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #e9ecef;
+        padding: 10px 0;
+        margin-bottom: 20px;
+      }
+      .navbar ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        justify-content: center;
+      }
+      .navbar li {
+        margin: 0 10px;
+      }
       .navbar a {
-        float: left;
-        color: #f2f2f2;
-        text-align: center;
-        padding: 14px 16px;
         text-decoration: none;
-        font-size: 17px;
+        color: #495057;
+        font-size: 16px;
+        padding: 5px 10px;
+        border-radius: 5px;
+        transition: background-color 0.3s;
       }
       .navbar a:hover {
-        background-color: #ddd;
-        color: black;
+        background-color: #e9ecef;
       }
       .navbar a.active {
         background-color: #3498db;
@@ -71,13 +158,12 @@
     </style>
   </head>
   <body>
-    <div class="navbar">
-      <a href="/" id="reportsLink">Reports</a>
-      <a href="/daily" id="dailyReportsLink">Daily Reports</a>
-      <a href="#" id="todayReportLink">Get Today's Report</a>
-    </div>
-
     <div class="container">
+      <div class="navbar">
+        <a href="/" id="reportsLink">Reports</a>
+        <a href="/daily" id="dailyReportsLink">Daily Reports</a>
+        <a href="#" id="todayReportLink">Get Today's Report</a>
+      </div>
       {% block content %}{% endblock %}
 
       <div id="todayReportContent" style="display: none">
