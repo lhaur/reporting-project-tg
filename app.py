@@ -37,7 +37,7 @@ def create_report():
 
 @app.route('/', methods=['GET'])
 def index():
-    return render_template('index.html')
+    return render_template('reports.html')
 
 @app.route('/daily', methods=['GET'])
 def daily():
@@ -92,7 +92,7 @@ def generate_daily_report():
     for i, report in enumerate(reports):
         report_content = "Raportti {}: ".format(i+1)
         for key, value in report.items():
-            if key not in ['_id']:
+            if key not in ['_id', 'id']:
                 report_content += f"{key}: {value}, "
         formatted_data.append(report_content.rstrip(', '))
     
