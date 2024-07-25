@@ -90,9 +90,9 @@ def generate_daily_report():
     
     formatted_data = []
     for i, report in enumerate(reports):
-        report_content = "Raportti {}: ".format(i+1)
+        report_content = "Report {}: ".format(i+1)
         for key, value in report.items():
-            if key not in ['_id', 'id', 'reportId']:
+            if key not in ['_id', 'id']: # Removed reportid from the list
                 report_content += f"{key}: {value}, "
         formatted_data.append(report_content.rstrip(', '))
     
