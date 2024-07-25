@@ -20,7 +20,7 @@ daily_reports_collection = db['daily_reports']
 
 def process_with_llm(reports_str):
     llm = ChatOpenAI(api_key=os.environ.get('OPENAI_API_KEY', "default"), model=os.environ.get("OPENAI_MODEL", "gpt-4o-mini"))
-    prompt = PromptTemplate.from_template("Generate daily report from these activities: {reports}")
+    prompt = PromptTemplate.from_template("Generate daily report from these activities and include also brief summary about day: {reports}")
     question = prompt.format(reports=reports_str)
     return llm.invoke(question).content
 
