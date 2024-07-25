@@ -35,7 +35,7 @@
   document
     .getElementById("fetchReports")
     .addEventListener("click", fetchDailyReports);
-
+  document.addEventListener("DOMContentLoaded", fetchDailyReports);
   async function fetchDailyReports() {
     const useDateFilter = document.getElementById("useDateFilter").checked;
     let params = new URLSearchParams();
