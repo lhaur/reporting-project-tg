@@ -22,10 +22,15 @@ db = client['telegram_bot']
 reports_collection = db['reports']
 daily_reports_collection = db['daily_reports']
 
-def process_with_llm(reports_str):
+lang_dict = {
+    "fi": "Finnish",
+    "en": "English"
+}
+
+def process_with_llm(reports_str, language):
     llm = ChatOpenAI(api_key=os.environ.get('OPENAI_API_KEY', "default"), model=os.environ.get("OPENAI_MODEL", "gpt-4o-mini"))
-    prompt = PromptTemplate.from_template("Generate daily report from these activities and include also brief summary about day: {reports}")
-    question = prompt.format(reports=reports_str)
+    prompt = PromptTemplate.from_template("Generate daily report (in language {lang}) from these activities and include also brief summary about day: {reports}")
+    question = prompt.format(reports=reports_str, lang=lang_dict[language])
     return llm.invoke(question).content
 
 @app.route('/api/reports', methods=['POST'])
@@ -82,6 +87,7 @@ def get_reports():
 
 @app.route('/api/daily_report', methods=['GET'])
 def generate_daily_report():
+    language = request.args.get('lang', 'fi')
     end_date = datetime.now()
     start_date = end_date - timedelta(days=1)
     
@@ -104,7 +110,7 @@ def generate_daily_report():
     
     formatted_data = "\n".join(formatted_data)
     print(formatted_data)
-    summary = process_with_llm(formatted_data)
+    summary = process_with_llm(formatted_data, language)
     
     daily_report = {
         "timestamp": end_date,

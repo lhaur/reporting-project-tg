@@ -13,15 +13,44 @@
   <body>
     <div class="container">
       <div class="navbar">
-        <a href="/" id="reportsLink">Reports</a>
-        <a href="/daily" id="dailyReportsLink">Daily Reports</a>
-        <a href="#" id="todayReportLink">Get Today's Report</a>
+        <a href="/" id="reportsLink" data-fi="Raportit" data-en="Reports"
+          >Raportit</a
+        >
+        <a
+          href="/daily"
+          id="dailyReportsLink"
+          data-fi="Päivittäiset raportit"
+          data-en="Daily Reports"
+          >Päivittäiset raportit</a
+        >
+        <a
+          href="#"
+          id="todayReportLink"
+          data-fi="Hae tämän päivän raportti"
+          data-en="Get Today's Report"
+          >Hae tämän päivän raportti</a
+        >
+        <div class="dropdown">
+          <button class="dropbtn" id="currentLang">🇫🇮</button>
+          <div class="dropdown-content">
+            <a href="#" id="fi-btn" data-fi="Suomi" data-en="Finnish"
+              >🇫🇮 Suomi</a
+            >
+            <a href="#" id="en-btn" data-fi="Englanti" data-en="English"
+              >🇬🇧 English</a
+            >
+          </div>
+        </div>
       </div>
       {% block content %}{% endblock %}
 
       <div id="todayReportContent" style="display: none">
-        <h2>Today's Report</h2>
-        <button id="fetchTodayReport">Get Today's Report</button>
+        <h2 data-fi="Päivän raportti" data-en="Today's Report"></h2>
+        <button
+          id="fetchTodayReport"
+          data-fi="Hae päivän raportti"
+          data-en="Get today's report"
+        ></button>
         <div id="todayReportSummary"></div>
       </div>
     </div>

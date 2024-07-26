@@ -96,7 +96,12 @@ button:hover {
 .navbar {
   background-color: #f8f9fa;
   border-bottom: 1px solid #e9ecef;
-  padding: 10px 0;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  background-color: #f8f9fa;
+  padding: 10px 20px;
+  position: relative;
   margin-bottom: 20px;
 }
 .navbar ul {
@@ -115,6 +120,7 @@ button:hover {
   font-size: 16px;
   padding: 5px 10px;
   border-radius: 5px;
+  margin-right: 10px;
   transition: background-color 0.3s;
 }
 .navbar a:hover {
@@ -151,4 +157,62 @@ button:hover {
   text-align: center;
   margin: 20px 0;
   font-weight: bold;
+}
+.dropdown {
+  position: absolute; /* Muutettu */
+  right: 20px; /* Lisätty */
+  top: 50%; /* Lisätty */
+  transform: translateY(-50%); /* Lisätty */
+}
+
+.dropbtn {
+  background-color: #f8f9fa;
+  color: #333;
+  padding: 10px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  right: 0;
+  background-color: #f9f9f9;
+  min-width: 120px;
+  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+}
+
+.dropdown-content a {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+  margin-right: 0; /* Lisätty */
+}
+
+.dropdown-content a:hover {
+  background-color: #f1f1f1;
+}
+
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+.dropdown:hover .dropbtn {
+  background-color: #e9ecef;
+}
+
+@media (max-width: 600px) {
+  .navbar {
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
+  .dropdown {
+    position: static;
+    transform: none;
+    margin-top: 10px;
+  }
 }

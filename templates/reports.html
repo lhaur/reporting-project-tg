@@ -1,22 +1,31 @@
 {% extends "base.html" %} {% block content %}
-<h1>Reports</h1>
+<h1 data-fi="Raportit" data-en="Reports">Raportit</h1>
 <div class="filter-section">
-  <label> <input type="checkbox" id="useDateFilter" /> Use date filter </label>
+  <label
+    data-fi="Käytä päivämääräsuodatinta"
+    data-en="Use date filter"
+    for="useDateFilter"
+  >
+    Käytä päivämääräsuodatinta
+  </label>
+  <input type="checkbox" id="useDateFilter" />
 
   <div id="dateInputs" style="display: none" class="date-inputs">
-    <label for="startDate">
-      Start Date:
-      <input type="date" id="startDate" />
+    <label for="startDate" data-fi="Aloituspäivä:" data-en="Start Date:">
+      Aloituspäivä:
     </label>
+    <input type="date" id="startDate" />
 
-    <label for="endDate">
-      End Date:
-      <input type="date" id="endDate" />
+    <label for="endDate" data-fi="Lopetuspäivä:" data-en="End Date:">
+      Lopetuspäivä:
     </label>
+    <input type="date" id="endDate" />
   </div>
 </div>
 
-<button id="fetchReports">Get Reports</button>
+<button id="fetchReports" data-fi="Hae raportit" data-en="Get Reports">
+  Hae raportit
+</button>
 
 <div id="summary"></div>
 <div id="reports"></div>
@@ -50,7 +59,10 @@
           startDate.setHours(0, 0, 0, 0);
           params.append("startdate", startDate.toISOString());
         } else {
-          document.getElementById("summary").innerHTML = "Invalid start date.";
+          document.getElementById("summary").innerHTML =
+            document.documentElement.lang === "fi"
+              ? "Virheellinen aloituspäivämäärä."
+              : "Invalid start date.";
           return;
         }
       }
@@ -61,13 +73,19 @@
           endDate.setHours(23, 59, 59, 999);
           params.append("enddate", endDate.toISOString());
         } else {
-          document.getElementById("summary").innerHTML = "Invalid end date.";
+          document.getElementById("summary").innerHTML =
+            document.documentElement.lang === "fi"
+              ? "Virheellinen lopetuspäivämäärä."
+              : "Invalid end date.";
           return;
         }
       }
 
       if (!startDateInput && !endDateInput) {
-        document.getElementById("summary").innerHTML = "Enter atleast 1 date.";
+        document.getElementById("summary").innerHTML =
+          document.documentElement.lang === "fi"
+            ? "Syötä vähintään 1 päivämäärä."
+            : "Enter at least 1 date.";
         return;
       }
     }
@@ -81,9 +99,10 @@
       displayReports(reports);
     } catch (error) {
       console.error("Error fetching reports:", error);
-      document.getElementById(
-        "summary"
-      ).innerHTML = `Error fetching reports: ${error.message}`;
+      document.getElementById("summary").innerHTML =
+        document.documentElement.lang === "fi"
+          ? `Virhe raporttien hakemisessa: ${error.message}`
+          : `Error fetching reports: ${error.message}`;
     }
   }
 
@@ -94,7 +113,10 @@
     if (reports.length > 0) {
       reports.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
-      summaryElement.innerHTML = `Overall ${reports.length} reports`;
+      summaryElement.innerHTML =
+        document.documentElement.lang === "fi"
+          ? `Yhteensä ${reports.length} raporttia`
+          : `Overall ${reports.length} reports`;
       reportsElement.innerHTML = reports
         .map((report, index) => {
           const date = new Date(report.timestamp);
@@ -110,7 +132,11 @@
           return `
                 <div class="expander">
                     <div class="expander-header" onclick="toggleExpander(this)">
-                        Report ${report.reportId || index} - ${formattedDate}
+                        ${
+                          document.documentElement.lang === "fi"
+                            ? "Raportti"
+                            : "Report"
+                        } ${report.reportId || index} - ${formattedDate}
                     </div>
                     <div class="expander-content">
                         ${Object.entries(report)
@@ -133,7 +159,10 @@
         })
         .join("");
     } else {
-      summaryElement.innerHTML = "Ei raportteja valitulla aikavälillä.";
+      summaryElement.innerHTML =
+        document.documentElement.lang === "fi"
+          ? "Ei raportteja valitulla aikavälillä."
+          : "No reports for the selected time period.";
       reportsElement.innerHTML = "";
     }
   }
