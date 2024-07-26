@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
+from flask_htpasswd import HtPasswdAuth
 from pymongo import MongoClient
 from bson import ObjectId
 import os
@@ -9,8 +10,11 @@ from langchain_core.prompts.prompt import PromptTemplate
 
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
-
+app.config['FLASK_HTPASSWD_PATH'] = ".htpasswd"
+app.config['FLASK_SECRET'] = "yesthisissomethingsecure"
 app.config['JSON_AS_ASCII'] = False
+
+htpasswd = HtPasswdAuth(app)
 
 # MongoDB-yhteyden luominen
 client = MongoClient(os.environ.get('MONGODB_URI', 'mongodb://localhost/'))
@@ -36,6 +40,7 @@ def create_report():
     return jsonify({"message": "Report created successfully", "id": str(result.inserted_id)}), 201
 
 @app.route('/', methods=['GET'])
+@htpasswd.required
 def index():
     return render_template('reports.html')
 

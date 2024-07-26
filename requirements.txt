@@ -1,5 +1,6 @@
 flask
 flask-cors
+flask_htpasswd
 pymongo
 langchain_core
 langchain_openai
