@@ -41,11 +41,12 @@ def create_report():
 
 @app.route('/', methods=['GET'])
 @htpasswd.required
-def index():
+def index(user):
     return render_template('reports.html')
 
 @app.route('/daily', methods=['GET'])
-def daily():
+@htpasswd.required
+def daily(user):
     return render_template('daily_reports.html')
 
 @app.route('/api/reports', methods=['GET'])
