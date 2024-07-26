@@ -204,6 +204,42 @@ button:hover {
   background-color: #e9ecef;
 }
 
+#todayReportButton {
+  background-color: #f8f9fa;
+  border: none;
+  color: #495057;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 4px;
+  max-width: fit-content;
+  transition: background-color 0.3s;
+}
+
+#todayReportButton:hover {
+  background-color: #3498db;
+  color: white;
+}
+
+#todayReportButton:disabled {
+  background-color: #cccccc;
+  color: #666666;
+  cursor: not-allowed;
+}
+
+#todayReportButton.loading {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+#todayReportButton.loading::after {
+  content: "...";
+  animation: loading 1s infinite;
+}
 @media (max-width: 600px) {
   .navbar {
     flex-wrap: wrap;
@@ -214,5 +250,17 @@ button:hover {
     position: static;
     transform: none;
     margin-top: 10px;
+  }
+}
+
+@keyframes loading {
+  0% {
+    content: ".";
+  }
+  33% {
+    content: "..";
+  }
+  66% {
+    content: "...";
   }
 }

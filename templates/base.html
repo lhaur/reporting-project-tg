@@ -7,6 +7,10 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link
       rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css"
+    />
+    <link
+      rel="stylesheet"
       href="{{ url_for('static', filename='style.css') }}"
     />
   </head>
@@ -23,13 +27,13 @@
           data-en="Daily Reports"
           >Päivittäiset raportit</a
         >
-        <a
-          href="#"
-          id="todayReportLink"
+        <button
+          id="todayReportButton"
           data-fi="Hae tämän päivän raportti"
           data-en="Get Today's Report"
-          >Hae tämän päivän raportti</a
         >
+          Hae tämän päivän raportti
+        </button>
         <div class="dropdown">
           <button class="dropbtn" id="currentLang">🇫🇮</button>
           <div class="dropdown-content">
@@ -42,19 +46,14 @@
           </div>
         </div>
       </div>
-      {% block content %}{% endblock %}
-
       <div id="todayReportContent" style="display: none">
         <h2 data-fi="Päivän raportti" data-en="Today's Report"></h2>
-        <button
-          id="fetchTodayReport"
-          data-fi="Hae päivän raportti"
-          data-en="Get today's report"
-        ></button>
         <div id="todayReportSummary"></div>
       </div>
+      {% block content %}{% endblock %}
+      <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+      <script src="{{ url_for('static', filename='base.js') }}"></script>
     </div>
-
-    <script src="{{ url_for('static', filename='base.js') }}"></script>
   </body>
 </html>
