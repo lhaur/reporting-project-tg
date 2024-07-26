@@ -1,0 +1,154 @@
+body {
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+  color: #333;
+  background-color: #f4f4f4;
+  margin: 0;
+  padding: 0;
+}
+.container {
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+h1 {
+  text-align: center;
+  color: #2c3e50;
+}
+.filter-section {
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #ecf0f1;
+  border-radius: 5px;
+}
+.date-inputs {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+.date-inputs label {
+  flex-basis: 48%;
+}
+input[type="date"] {
+  width: 100%;
+  padding: 5px;
+  margin-top: 5px;
+}
+button {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  background-color: #3498db;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+button:hover {
+  background-color: #2980b9;
+}
+.expander {
+  border: 1px solid #ddd;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  overflow: hidden;
+}
+.expander-header {
+  background-color: #f1f1f1;
+  padding: 10px;
+  cursor: pointer;
+  font-weight: bold;
+}
+.expander-content {
+  display: none;
+  padding: 10px;
+  background-color: #fff;
+}
+.expander-content h1,
+.expander-content h2,
+.expander-content h3 {
+  margin-top: 10px;
+  margin-bottom: 5px;
+}
+.expander-content p {
+  margin-bottom: 10px;
+}
+.expander-content ul,
+.expander-content ol {
+  margin-left: 20px;
+  margin-bottom: 10px;
+}
+.expander-content pre {
+  background-color: #f4f4f4;
+  padding: 10px;
+  border-radius: 5px;
+  overflow-x: auto;
+}
+.expander-content code {
+  font-family: monospace;
+  background-color: #f4f4f4;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+.navbar {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  padding: 10px 0;
+  margin-bottom: 20px;
+}
+.navbar ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+}
+.navbar li {
+  margin: 0 10px;
+}
+.navbar a {
+  text-decoration: none;
+  color: #495057;
+  font-size: 16px;
+  padding: 5px 10px;
+  border-radius: 5px;
+  transition: background-color 0.3s;
+}
+.navbar a:hover {
+  background-color: #e9ecef;
+}
+.navbar a.active {
+  background-color: #3498db;
+  color: white;
+}
+#todayReportContent {
+  margin-top: 20px;
+}
+#fetchTodayReport {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  background-color: #3498db;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+#fetchTodayReport:hover {
+  background-color: #2980b9;
+}
+#todayReportSummary {
+  background-color: #ecf0f1;
+  padding: 15px;
+  border-radius: 5px;
+}
+#summary {
+  text-align: center;
+  margin: 20px 0;
+  font-weight: bold;
+}
