@@ -306,7 +306,7 @@ def generate_monthly_report():
         formatted_data.append(report_content.rstrip(', '))
 
     formatted_data = "\n".join(formatted_data)
-    summary = process_with_llm(formatted_data, language)
+    summary = process_monthly_with_llm(formatted_data, language)
 
     category = category if category_name else None
     monthly_report = MonthlyReport(
