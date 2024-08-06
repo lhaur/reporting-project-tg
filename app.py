@@ -330,7 +330,7 @@ def get_reports_by_category(category_name):
     reports = Report.objects(**query).order_by('-timestamp')
 
 
-    return reports.to_json()
+    return reports.to_json(reference=True)
 
 @app.route('/api/categories', methods=['GET'])
 def get_categories():
