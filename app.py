@@ -86,7 +86,7 @@ def get_reports():
     if not start_date and not end_date and not category and not search_query:
         reports = reports.limit(10)
 
-    return jsonify(reports)
+    return reports.to_json()
 
 
 @app.route("/api/daily_report", methods=["GET"])
