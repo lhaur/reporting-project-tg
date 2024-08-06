@@ -143,7 +143,7 @@ def get_daily_reports():
 
     daily_reports = DailyReport.objects(**query).order_by("-timestamp")
 
-    return jsonify(daily_reports)
+    return daily_reports.to_json()
 
 
 @app.route("/api/monthly_report", methods=["GET"])
@@ -203,7 +203,7 @@ def get_monthly_reports():
 
     monthly_reports = MonthlyReport.objects(**query).order_by("-timestamp")
 
-    return jsonify(monthly_reports)
+    return monthly_reports.to_json()
 
 
 if __name__ == "__main__":
