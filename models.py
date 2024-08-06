@@ -10,7 +10,7 @@ class Report(Document):
     location = StringField()
     description = StringField(required=True)
     category = ReferenceField(Category, required=True)
-    urgent = BooleanField(default=False)
+    urgent = StringField(default=False)
     more_details = StringField()
     attachments = StringField()
     timestamp = DateTimeField(default=datetime.now)
