@@ -19,7 +19,7 @@ app.config['JSON_AS_ASCII'] = False
 htpasswd = HtPasswdAuth(app)
 
 # MongoDB-yhteyden luominen
-connect(host=os.environ.get('MONGODB_URI', 'mondogb://localhost'))
+connect(host=os.environ.get('MONGODB_URI', 'mongodb://localhost'))
 
 
 lang_dict = {
