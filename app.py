@@ -117,7 +117,6 @@ def generate_daily_report():
         end_date=end_date,
     )
     daily_report.save()
-    return jsonify({"id": daily_report.id})
     return jsonify(
         {
             "timestamp": daily_report.timestamp.isoformat(),
@@ -144,6 +143,33 @@ def get_daily_reports():
     daily_reports = DailyReport.objects(**query).order_by("-timestamp")
 
     return daily_reports.to_json()
+
+@app.route('/api/reports/<report_id>', methods=['GET'])
+def get_report(report_id):
+    report = Report.objects(id=report_id).first()
+
+    if not report:
+        return jsonify({"error": "Report not found"}), 404
+
+    return report.to_json()
+
+@app.route('/api/reports/daily/<report_id>', methods=['GET'])
+def get_daily_report(report_id):
+    daily_report = DailyReport.objects(id=report_id).first()
+
+    if not daily_report:
+        return jsonify({"error": "Daily report not found"}), 404
+
+    return daily_report.to_json()
+
+@app.route('/api/reports/monthly/<report_id>', methods=['GET'])
+def get_monthly_report(report_id):
+    monthly_report = MonthlyReport.objects(id=report_id).first()
+
+    if not monthly_report:
+        return jsonify({"error": "Monthly report not found"}), 404
+
+    return monthly_report.to_json()
 
 
 @app.route("/api/monthly_report", methods=["GET"])
@@ -177,7 +203,6 @@ def generate_monthly_report():
         end_date=end_date,
     )
     monthly_report.save()
-    return jsonify({"id": monthly_report.id})
     return jsonify(
         {
             "timestamp": monthly_report.timestamp.isoformat(),
