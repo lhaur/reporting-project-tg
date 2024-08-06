@@ -329,14 +329,8 @@ def get_reports_by_category(category_name):
 
     reports = Report.objects(**query).order_by('-timestamp')
 
-    reports_data = []
-    for report in reports:
-        report_data = report.to_mongo().to_dict()
-        report_data['_id'] = str(report_data['_id'])
-        report_data['category'] = report_data['category'].name
-        reports_data.append(report_data)
 
-    return jsonify(reports_data)
+    return reports.to_json()
 
 @app.route('/api/categories', methods=['GET'])
 def get_categories():
