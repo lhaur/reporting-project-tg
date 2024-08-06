@@ -114,7 +114,7 @@ def get_reports():
     if not start_date and not end_date and not category_name and not search_query:
         reports = reports.limit(10)
 
-    return reports.to_json()
+    return reports.to_json(reference=True)
 
 
 @app.route('/api/daily_report', methods=['GET'])
@@ -185,7 +185,7 @@ def get_daily_reports():
 
     daily_reports = DailyReport.objects(**query).order_by('-timestamp')
 
-    return daily_reports.to_json()
+    return daily_reports.to_json(reference=True)
 
 @app.route('/api/reports/<report_id>', methods=['GET'])
 def get_report(report_id):
@@ -194,7 +194,7 @@ def get_report(report_id):
     if not report:
         return jsonify({"error": "Report not found"}), 404
 
-    return report.to_json()
+    return report.to_json(reference=True)
 
 @app.route('/api/reports/daily/<report_id>', methods=['GET'])
 def get_daily_report(report_id):
@@ -203,7 +203,7 @@ def get_daily_report(report_id):
     if not daily_report:
         return jsonify({"error": "Daily report not found"}), 404
 
-    return daily_report.to_json()
+    return daily_report.to_json(reference=True)
 
 @app.route('/api/reports/monthly/<report_id>', methods=['GET'])
 def get_monthly_report(report_id):
@@ -212,7 +212,7 @@ def get_monthly_report(report_id):
     if not monthly_report:
         return jsonify({"error": "Monthly report not found"}), 404
 
-    return monthly_report.to_json()
+    return monthly_report.to_json(reference=True)
 
 
 @app.route('/api/monthly_report', methods=['GET'])
@@ -285,7 +285,7 @@ def get_monthly_reports():
 
     monthly_reports = MonthlyReport.objects(**query).order_by('-timestamp')
 
-    return monthly_reports.to_json()
+    return monthly_reports.to_json(reference=True)
 
 
 @app.route('/api/reports/category/<category_name>', methods=['GET'])
@@ -307,8 +307,13 @@ def get_reports_by_category(category_name):
 
     reports = Report.objects(**query).order_by('-timestamp')
 
-    return reports.to_json()
+    return reports.to_json(reference=True)
 
+@app.route('/api/categories', methods=['GET'])
+def get_categories():
+    categories = Category.objects().order_by('name')
+    category_names = [category.name for category in categories]
+    return jsonify(category_names)
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port="8080")
