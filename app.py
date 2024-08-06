@@ -201,7 +201,21 @@ def get_daily_reports():
 
     daily_reports = DailyReport.objects(**query).order_by('-timestamp')
 
-    return daily_reports.to_json()
+    # Serialize daily reports
+    daily_report_list = []
+    for daily_report in daily_reports:
+        daily_report_dict = {
+            "_id": str(daily_report.id),
+            "timestamp": daily_report.timestamp.isoformat(),
+            "summary": daily_report.summary,
+            "report_count": daily_report.report_count,
+            "start_date": daily_report.start_date.isoformat(),
+            "category": daily_report.category.name if daily_report.category else None,  # Fetch the category name
+            "end_date": daily_report.end_date.isoformat()
+        }
+        daily_report_list.append(daily_report_dict)
+
+    return jsonify(daily_report_list)
 
 @app.route('/api/reports/<report_id>', methods=['GET'])
 def get_report(report_id):
@@ -210,7 +224,20 @@ def get_report(report_id):
     if not report:
         return jsonify({"error": "Report not found"}), 404
 
-    return report.to_json()
+    report_dict = {
+        "_id": str(report.id),
+        "reporter": report.reporter,
+        "topic": report.topic,
+        "location": report.location,
+        "description": report.description,
+        "category": report.category.name if report.category else None,  # Fetch the category name
+        "urgent": report.urgent,
+        "more_details": report.more_details,
+        "attachments": report.attachments,
+        "timestamp": report.timestamp.isoformat()
+    }
+
+    return jsonify(report_dict)
 
 @app.route('/api/reports/daily/<report_id>', methods=['GET'])
 def get_daily_report(report_id):
@@ -219,7 +246,17 @@ def get_daily_report(report_id):
     if not daily_report:
         return jsonify({"error": "Daily report not found"}), 404
 
-    return daily_report.to_json()
+    daily_report_dict = {
+        "_id": str(daily_report.id),
+        "timestamp": daily_report.timestamp.isoformat(),
+        "summary": daily_report.summary,
+        "report_count": daily_report.report_count,
+        "start_date": daily_report.start_date.isoformat(),
+        "category": daily_report.category.name if daily_report.category else None,  # Fetch the category name
+        "end_date": daily_report.end_date.isoformat()
+    }
+
+    return jsonify(daily_report_dict)
 
 @app.route('/api/reports/monthly/<report_id>', methods=['GET'])
 def get_monthly_report(report_id):
@@ -228,7 +265,17 @@ def get_monthly_report(report_id):
     if not monthly_report:
         return jsonify({"error": "Monthly report not found"}), 404
 
-    return monthly_report.to_json()
+    monthly_report_dict = {
+        "_id": str(monthly_report.id),
+        "timestamp": monthly_report.timestamp.isoformat(),
+        "summary": monthly_report.summary,
+        "report_count": monthly_report.report_count,
+        "start_date": monthly_report.start_date.isoformat(),
+        "category": monthly_report.category.name if monthly_report.category else None,  # Fetch the category name
+        "end_date": monthly_report.end_date.isoformat()
+    }
+
+    return jsonify(monthly_report_dict)
 
 
 @app.route('/api/monthly_report', methods=['GET'])
@@ -301,7 +348,21 @@ def get_monthly_reports():
 
     monthly_reports = MonthlyReport.objects(**query).order_by('-timestamp')
 
-    return monthly_reports.to_json()
+    # Serialize monthly reports
+    monthly_report_list = []
+    for monthly_report in monthly_reports:
+        monthly_report_dict = {
+            "_id": str(monthly_report.id),
+            "timestamp": monthly_report.timestamp.isoformat(),
+            "summary": monthly_report.summary,
+            "report_count": monthly_report.report_count,
+            "start_date": monthly_report.start_date.isoformat(),
+            "category": monthly_report.category.name if monthly_report.category else None,  # Fetch the category name
+            "end_date": monthly_report.end_date.isoformat()
+        }
+        monthly_report_list.append(monthly_report_dict)
+
+    return jsonify(monthly_report_list)
 
 
 @app.route('/api/reports/category/<category_name>', methods=['GET'])
@@ -323,8 +384,24 @@ def get_reports_by_category(category_name):
 
     reports = Report.objects(**query).order_by('-timestamp')
 
+    # Serialize reports
+    report_list = []
+    for report in reports:
+        report_dict = {
+            "_id": str(report.id),
+            "reporter": report.reporter,
+            "topic": report.topic,
+            "location": report.location,
+            "description": report.description,
+            "category": report.category.name if report.category else None,  # Fetch the category name
+            "urgent": report.urgent,
+            "more_details": report.more_details,
+            "attachments": report.attachments,
+            "timestamp": report.timestamp.isoformat()
+        }
+        report_list.append(report_dict)
 
-    return reports.to_json()
+    return jsonify(report_list)
 
 @app.route('/api/categories', methods=['GET'])
 def get_categories():
