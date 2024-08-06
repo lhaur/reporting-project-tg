@@ -231,5 +231,23 @@ def get_monthly_reports():
     return monthly_reports.to_json()
 
 
+@app.route('/api/reports/category/<category>', methods=['GET'])
+def get_reports_by_category(category):
+    start_date = request.args.get('startdate')
+    end_date = request.args.get('enddate')
+
+    query = {'category': category}
+    if start_date:
+        start_date = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
+        query['timestamp__gte'] = start_date
+    if end_date:
+        end_date = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+        query['timestamp__lte'] = end_date
+
+    reports = Report.objects(**query).order_by('-timestamp')
+
+    return jsonify(reports.to_json())
+
+
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port="8080")
