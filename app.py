@@ -116,7 +116,7 @@ def get_reports():
 
     reports_data = []
     for report in reports:
-        report_data = report.to_mongo()
+        report_data = report.to_mongo().to_dict()
         report_data['_id'] = str(report_data['_id'])
         report_data['category'] = report_data['category'].name
         reports_data.append(report_data)
@@ -195,7 +195,7 @@ def get_daily_reports():
     reports_data = []
 
     for report in daily_reports:
-        report_data = report.to_mongo()
+        report_data = report.to_mongo().to_dict()
         report_data['_id'] = str(report_data['_id'])
         report_data['category'] = report_data['category'].name
         reports_data.append(report_data)
@@ -302,7 +302,7 @@ def get_monthly_reports():
 
     reports_data = []
     for report in monthly_reports:
-        report_data = report.to_mongo()
+        report_data = report.to_mongo().to_dict()
         report_data['_id'] = str(report_data['_id'])
         report_data['category'] = report_data['category'].name
         reports_data.append(report_data)
@@ -331,7 +331,7 @@ def get_reports_by_category(category_name):
 
     reports_data = []
     for report in reports:
-        report_data = report.to_mongo()
+        report_data = report.to_mongo().to_dict()
         report_data['_id'] = str(report_data['_id'])
         report_data['category'] = report_data['category'].name
         reports_data.append(report_data)
