@@ -117,7 +117,7 @@ def generate_daily_report():
         end_date=end_date,
     )
     daily_report.save()
-
+    return jsonify({"id": daily_report.id})
     return jsonify(
         {
             "timestamp": daily_report.timestamp.isoformat(),
@@ -177,7 +177,7 @@ def generate_monthly_report():
         end_date=end_date,
     )
     monthly_report.save()
-
+    return jsonify({"id": monthly_report.id})
     return jsonify(
         {
             "timestamp": monthly_report.timestamp.isoformat(),
