@@ -86,7 +86,7 @@ def get_reports():
     if not start_date and not end_date and not category and not search_query:
         reports = reports.limit(10)
 
-    return jsonify(reports.to_json())
+    return jsonify(reports)
 
 
 @app.route("/api/daily_report", methods=["GET"])
@@ -143,7 +143,7 @@ def get_daily_reports():
 
     daily_reports = DailyReport.objects(**query).order_by("-timestamp")
 
-    return jsonify(daily_reports.to_json())
+    return jsonify(daily_reports)
 
 
 @app.route("/api/monthly_report", methods=["GET"])
@@ -203,7 +203,7 @@ def get_monthly_reports():
 
     monthly_reports = MonthlyReport.objects(**query).order_by("-timestamp")
 
-    return jsonify(monthly_reports.to_json())
+    return jsonify(monthly_reports)
 
 
 if __name__ == "__main__":
