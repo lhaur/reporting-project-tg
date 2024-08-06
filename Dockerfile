@@ -6,7 +6,7 @@ WORKDIR /app
 
 # Define env variables here, can be also defined from caprover panel
 ENV TEST_ENV_KEY = "testing"
-
+RUN apt -y update && apt install -y python-dateutil
 # Copy files to container
 COPY . .
 
