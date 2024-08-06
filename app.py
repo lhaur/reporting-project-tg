@@ -30,7 +30,18 @@ def process_with_llm(reports_str, language):
         model=os.environ.get("OPENAI_MODEL", "gpt-4o-mini"),
     )
     prompt = PromptTemplate.from_template(
-        "Generate daily report (in language {lang}) from these activities and include also brief summary about day: {reports}"
+        "Generate daily report (in language {lang}) from these activities and include also brief summary about day: {reports} If there is no reports, return just something like no reports for that day."
+    )
+    question = prompt.format(reports=reports_str, lang=lang_dict[language])
+    return llm.invoke(question).content
+
+def process_monthly_with_llm(reports_str, language):
+    llm = ChatOpenAI(
+        api_key=os.environ.get("OPENAI_API_KEY", "default"),
+        model=os.environ.get("OPENAI_MODEL", "gpt-4o-mini"),
+    )
+    prompt = PromptTemplate.from_template(
+        "Generate monthly report (in language {lang}) from these activities and include also brief summary about day: {reports}. If there is no reports, return just something like no reports for that month."
     )
     question = prompt.format(reports=reports_str, lang=lang_dict[language])
     return llm.invoke(question).content
@@ -89,23 +100,26 @@ def get_reports():
     return reports.to_json()
 
 
-@app.route("/api/daily_report", methods=["GET"])
+@app.route('/api/daily_report', methods=['GET'])
 def generate_daily_report():
-    language = request.args.get("lang", "fi")
+    language = request.args.get('lang', 'fi')
+    category = request.args.get('category')
     end_date = datetime.now()
     start_date = end_date - timedelta(days=1)
 
-    reports = Report.objects(
-        timestamp__gte=start_date, timestamp__lte=end_date
-    ).order_by("-timestamp")
+    query = {'timestamp__gte': start_date, 'timestamp__lte': end_date}
+    if category:
+        query['category'] = category
+
+    reports = Report.objects(**query).order_by('-timestamp')
 
     formatted_data = []
     for i, report in enumerate(reports):
         report_content = f"Report {i + 1}: "
         for key, value in report.to_mongo().items():
-            if key not in ["_id", "id"]:
+            if key not in ['_id', 'id']:
                 report_content += f"{key}: {value}, "
-        formatted_data.append(report_content.rstrip(", "))
+        formatted_data.append(report_content.rstrip(', '))
 
     formatted_data = "\n".join(formatted_data)
     summary = process_with_llm(formatted_data, language)
@@ -114,33 +128,35 @@ def generate_daily_report():
         summary=summary,
         report_count=len(reports),
         start_date=start_date,
-        end_date=end_date,
+        end_date=end_date
     )
     daily_report.save()
-    return jsonify(
-        {
-            "timestamp": daily_report.timestamp.isoformat(),
-            "summary": daily_report.summary,
-            "report_count": daily_report.report_count,
-            "id": str(daily_report.id),
-        }
-    )
+
+    return jsonify({
+        "timestamp": daily_report.timestamp.isoformat(),
+        "summary": daily_report.summary,
+        "report_count": daily_report.report_count,
+        "id": str(daily_report.id)
+    })
 
 
-@app.route("/api/daily_reports", methods=["GET"])
+@app.route('/api/daily_reports', methods=['GET'])
 def get_daily_reports():
-    start_date = request.args.get("startdate")
-    end_date = request.args.get("enddate")
+    start_date = request.args.get('startdate')
+    end_date = request.args.get('enddate')
+    category = request.args.get('category')
 
     query = {}
     if start_date:
-        start_date = datetime.fromisoformat(start_date.replace("Z", "+00:00"))
-        query["timestamp__gte"] = start_date
+        start_date = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
+        query['start_date__gte'] = start_date
     if end_date:
-        end_date = datetime.fromisoformat(end_date.replace("Z", "+00:00"))
-        query["timestamp__lte"] = end_date
+        end_date = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+        query['end_date__lte'] = end_date
+    if category:
+        query['category'] = category
 
-    daily_reports = DailyReport.objects(**query).order_by("-timestamp")
+    daily_reports = DailyReport.objects(**query).order_by('-timestamp')
 
     return daily_reports.to_json()
 
@@ -172,61 +188,66 @@ def get_monthly_report(report_id):
     return monthly_report.to_json()
 
 
-@app.route("/api/monthly_report", methods=["GET"])
+@app.route('/api/monthly_report', methods=['GET'])
 def generate_monthly_report():
-    language = request.args.get("lang", "fi")
-    year = int(request.args.get("year"))
-    month = int(request.args.get("month"))
+    language = request.args.get('lang', 'fi')
+    category = request.args.get('category')
+    year = int(request.args.get('year'))
+    month = int(request.args.get('month'))
 
     start_date = datetime(year, month, 1)
     end_date = start_date + relativedelta(months=1) - relativedelta(days=1)
 
-    reports = Report.objects(
-        timestamp__gte=start_date, timestamp__lte=end_date
-    ).order_by("-timestamp")
+    query = {'timestamp__gte': start_date, 'timestamp__lte': end_date}
+    if category:
+        query['category'] = category
+
+    reports = Report.objects(**query).order_by('-timestamp')
 
     formatted_data = []
     for i, report in enumerate(reports):
         report_content = f"Report {i + 1}: "
         for key, value in report.to_mongo().items():
-            if key not in ["_id", "id"]:
+            if key not in ['_id', 'id']:
                 report_content += f"{key}: {value}, "
-        formatted_data.append(report_content.rstrip(", "))
+        formatted_data.append(report_content.rstrip(', '))
 
     formatted_data = "\n".join(formatted_data)
-    summary = process_with_llm(formatted_data, language)
+    summary = process_monthly_with_llm(formatted_data, language)
 
     monthly_report = MonthlyReport(
         summary=summary,
         report_count=len(reports),
         start_date=start_date,
-        end_date=end_date,
+        end_date=end_date
     )
     monthly_report.save()
-    return jsonify(
-        {
-            "timestamp": monthly_report.timestamp.isoformat(),
-            "summary": monthly_report.summary,
-            "report_count": monthly_report.report_count,
-            "id": str(monthly_report.id),
-        }
-    )
+
+    return jsonify({
+        "timestamp": monthly_report.timestamp.isoformat(),
+        "summary": monthly_report.summary,
+        "report_count": monthly_report.report_count,
+        "id": str(monthly_report.id)
+    })
 
 
-@app.route("/api/monthly_reports", methods=["GET"])
+@app.route('/api/monthly_reports', methods=['GET'])
 def get_monthly_reports():
-    start_date = request.args.get("startdate")
-    end_date = request.args.get("enddate")
+    start_date = request.args.get('startdate')
+    end_date = request.args.get('enddate')
+    category = request.args.get('category')
 
     query = {}
     if start_date:
-        start_date = datetime.fromisoformat(start_date.replace("Z", "+00:00"))
-        query["start_date__gte"] = start_date
+        start_date = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
+        query['start_date__gte'] = start_date
     if end_date:
-        end_date = datetime.fromisoformat(end_date.replace("Z", "+00:00"))
-        query["end_date__lte"] = end_date
+        end_date = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+        query['end_date__lte'] = end_date
+    if category:
+        query['category'] = category
 
-    monthly_reports = MonthlyReport.objects(**query).order_by("-timestamp")
+    monthly_reports = MonthlyReport.objects(**query).order_by('-timestamp')
 
     return monthly_reports.to_json()
 
@@ -246,7 +267,7 @@ def get_reports_by_category(category):
 
     reports = Report.objects(**query).order_by('-timestamp')
 
-    return jsonify(reports.to_json())
+    return reports.to_json()
 
 
 if __name__ == "__main__":
