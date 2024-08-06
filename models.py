@@ -1,4 +1,4 @@
-from mongoengine import Document, StringField, BooleanField, DateTimeField, IntField
+from mongoengine import Document, StringField, BooleanField, DateTimeField, IntField, ReferenceField
 from datetime import datetime
 
 class Category(Document):
@@ -9,7 +9,7 @@ class Report(Document):
     topic = StringField(required=True)
     location = StringField()
     description = StringField(required=True)
-    category = StringField(required=True)
+    category = ReferenceField(Category, required=True)
     urgent = BooleanField(default=False)
     more_details = StringField()
     attachments = StringField()
@@ -25,7 +25,7 @@ class DailyReport(Document):
     summary = StringField(required=True)
     report_count = IntField(default=0)
     start_date = DateTimeField(required=True)
-    category = StringField()
+    category = ReferenceField(Category)
     end_date = DateTimeField(required=True)
 
 class MonthlyReport(Document):
@@ -33,5 +33,5 @@ class MonthlyReport(Document):
     summary = StringField(required=True)
     report_count = IntField(default=0)
     start_date = DateTimeField(required=True)
-    category = StringField()
+    category = ReferenceField(Category)
     end_date = DateTimeField(required=True)
