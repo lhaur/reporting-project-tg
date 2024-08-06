@@ -128,7 +128,8 @@ def generate_daily_report():
         summary=summary,
         report_count=len(reports),
         start_date=start_date,
-        end_date=end_date
+        end_date=end_date,
+        category=category
     )
     daily_report.save()
 
@@ -219,7 +220,8 @@ def generate_monthly_report():
         summary=summary,
         report_count=len(reports),
         start_date=start_date,
-        end_date=end_date
+        end_date=end_date,
+        category=category
     )
     monthly_report.save()
 

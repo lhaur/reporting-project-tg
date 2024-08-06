@@ -22,6 +22,7 @@ class DailyReport(Document):
     summary = StringField(required=True)
     report_count = IntField(default=0)
     start_date = DateTimeField(required=True)
+    category = StringField()
     end_date = DateTimeField(required=True)
 
 class MonthlyReport(Document):
@@ -29,4 +30,5 @@ class MonthlyReport(Document):
     summary = StringField(required=True)
     report_count = IntField(default=0)
     start_date = DateTimeField(required=True)
+    category = StringField()
     end_date = DateTimeField(required=True)
