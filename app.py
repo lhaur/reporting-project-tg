@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts.prompt import PromptTemplate
 from mongoengine import connect
-from models import Report, DailyReport, MonthlyReport
+from models import Report, DailyReport, MonthlyReport, Category
 
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
@@ -22,6 +22,17 @@ connect(host=os.environ.get("MONGODB_URI", "mongodb://localhost"))
 
 
 lang_dict = {"fi": "Finnish", "en": "English"}
+
+def initialize_categories():
+    categories = ['warehouse', 'maintenance', 'production', 'packaging', 'other']
+    for category_name in categories:
+        category = Category.objects(name=category_name).first()
+        if not category:
+            category = Category(name=category_name)
+            category.save()
+
+# Kutsu initialize_categories-funktiota ennen sovelluksen käynnistämistä
+initialize_categories()
 
 
 def process_with_llm(reports_str, language):
@@ -50,11 +61,14 @@ def process_monthly_with_llm(reports_str, language):
 @app.route("/api/reports", methods=["POST"])
 def create_report():
     report_data = request.json
+    category_name = report_data['category']
+    category = Category.objects(name=category_name).first()
+    if not category:
+        return jsonify({"error": "Invalid category"}), 400
+    report_data['category'] = category
     report = Report(**report_data)
     report.save()
-    return jsonify(
-        {"message": "Report created successfully", "id": str(report.id)}
-    ), 201
+    return jsonify({"message": "Report created successfully", "id": str(report.id)}), 201
 
 
 @app.route("/", methods=["GET"])
@@ -74,27 +88,30 @@ def monthly(user):
     return render_template("monthly_reports.html")
 
 
-@app.route("/api/reports", methods=["GET"])
+@app.route('/api/reports', methods=['GET'])
 def get_reports():
-    start_date = request.args.get("startdate")
-    end_date = request.args.get("enddate")
-    category = request.args.get("category")
-    search_query = request.args.get("search")
+    start_date = request.args.get('startdate')
+    end_date = request.args.get('enddate')
+    category_name = request.args.get('category')
+    search_query = request.args.get('search')
 
     query = {}
     if start_date:
-        start_date = datetime.fromisoformat(start_date.replace("Z", "+00:00"))
-        query["timestamp__gte"] = start_date
+        start_date = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
+        query['timestamp__gte'] = start_date
     if end_date:
-        end_date = datetime.fromisoformat(end_date.replace("Z", "+00:00"))
-        query["timestamp__lte"] = end_date
-    if category:
-        query["category"] = category
+        end_date = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+        query['timestamp__lte'] = end_date
+    if category_name:
+        category = Category.objects(name=category_name).first()
+        if not category:
+            return jsonify({"error": "Invalid category"}), 400
+        query['category'] = category
     if search_query:
-        query["$text"] = {"$search": search_query}
+        query['$text'] = {'$search': search_query}
 
-    reports = Report.objects(**query).order_by("-timestamp")
-    if not start_date and not end_date and not category and not search_query:
+    reports = Report.objects(**query).order_by('-timestamp')
+    if not start_date and not end_date and not category_name and not search_query:
         reports = reports.limit(10)
 
     return reports.to_json()
@@ -103,12 +120,15 @@ def get_reports():
 @app.route('/api/daily_report', methods=['GET'])
 def generate_daily_report():
     language = request.args.get('lang', 'fi')
-    category = request.args.get('category')
+    category_name = request.args.get('category')
     end_date = datetime.now()
     start_date = end_date - timedelta(days=1)
 
     query = {'timestamp__gte': start_date, 'timestamp__lte': end_date}
-    if category:
+    if category_name:
+        category = Category.objects(name=category_name).first()
+        if not category:
+            return jsonify({"error": "Invalid category"}), 400
         query['category'] = category
 
     reports = Report.objects(**query).order_by('-timestamp')
@@ -117,13 +137,14 @@ def generate_daily_report():
     for i, report in enumerate(reports):
         report_content = f"Report {i + 1}: "
         for key, value in report.to_mongo().items():
-            if key not in ['_id', 'id']:
+            if key not in ['_id', 'id', 'category']:
                 report_content += f"{key}: {value}, "
         formatted_data.append(report_content.rstrip(', '))
 
     formatted_data = "\n".join(formatted_data)
     summary = process_with_llm(formatted_data, language)
 
+    category = category if category_name else None
     daily_report = DailyReport(
         summary=summary,
         report_count=len(reports),
@@ -137,15 +158,17 @@ def generate_daily_report():
         "timestamp": daily_report.timestamp.isoformat(),
         "summary": daily_report.summary,
         "report_count": daily_report.report_count,
-        "id": str(daily_report.id)
+        "id": str(daily_report.id),
+        "category": category_name if category else None
     })
+
 
 
 @app.route('/api/daily_reports', methods=['GET'])
 def get_daily_reports():
     start_date = request.args.get('startdate')
     end_date = request.args.get('enddate')
-    category = request.args.get('category')
+    category_name = request.args.get('category')
 
     query = {}
     if start_date:
@@ -154,7 +177,10 @@ def get_daily_reports():
     if end_date:
         end_date = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
         query['end_date__lte'] = end_date
-    if category:
+    if category_name:
+        category = Category.objects(name=category_name).first()
+        if not category:
+            return jsonify({"error": "Invalid category"}), 400
         query['category'] = category
 
     daily_reports = DailyReport.objects(**query).order_by('-timestamp')
@@ -192,7 +218,7 @@ def get_monthly_report(report_id):
 @app.route('/api/monthly_report', methods=['GET'])
 def generate_monthly_report():
     language = request.args.get('lang', 'fi')
-    category = request.args.get('category')
+    category_name = request.args.get('category')
     year = int(request.args.get('year'))
     month = int(request.args.get('month'))
 
@@ -200,7 +226,10 @@ def generate_monthly_report():
     end_date = start_date + relativedelta(months=1) - relativedelta(days=1)
 
     query = {'timestamp__gte': start_date, 'timestamp__lte': end_date}
-    if category:
+    if category_name:
+        category = Category.objects(name=category_name).first()
+        if not category:
+            return jsonify({"error": "Invalid category"}), 400
         query['category'] = category
 
     reports = Report.objects(**query).order_by('-timestamp')
@@ -209,13 +238,14 @@ def generate_monthly_report():
     for i, report in enumerate(reports):
         report_content = f"Report {i + 1}: "
         for key, value in report.to_mongo().items():
-            if key not in ['_id', 'id']:
+            if key not in ['_id', 'id', 'category']:
                 report_content += f"{key}: {value}, "
         formatted_data.append(report_content.rstrip(', '))
 
     formatted_data = "\n".join(formatted_data)
-    summary = process_monthly_with_llm(formatted_data, language)
+    summary = process_with_llm(formatted_data, language)
 
+    category = category if category_name else None
     monthly_report = MonthlyReport(
         summary=summary,
         report_count=len(reports),
@@ -229,7 +259,8 @@ def generate_monthly_report():
         "timestamp": monthly_report.timestamp.isoformat(),
         "summary": monthly_report.summary,
         "report_count": monthly_report.report_count,
-        "id": str(monthly_report.id)
+        "id": str(monthly_report.id),
+        "category": category_name if category else None
     })
 
 
@@ -237,7 +268,7 @@ def generate_monthly_report():
 def get_monthly_reports():
     start_date = request.args.get('startdate')
     end_date = request.args.get('enddate')
-    category = request.args.get('category')
+    category_name = request.args.get('category')
 
     query = {}
     if start_date:
@@ -246,7 +277,10 @@ def get_monthly_reports():
     if end_date:
         end_date = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
         query['end_date__lte'] = end_date
-    if category:
+    if category_name:
+        category = Category.objects(name=category_name).first()
+        if not category:
+            return jsonify({"error": "Invalid category"}), 400
         query['category'] = category
 
     monthly_reports = MonthlyReport.objects(**query).order_by('-timestamp')
@@ -254,10 +288,14 @@ def get_monthly_reports():
     return monthly_reports.to_json()
 
 
-@app.route('/api/reports/category/<category>', methods=['GET'])
-def get_reports_by_category(category):
+@app.route('/api/reports/category/<category_name>', methods=['GET'])
+def get_reports_by_category(category_name):
     start_date = request.args.get('startdate')
     end_date = request.args.get('enddate')
+
+    category = Category.objects(name=category_name).first()
+    if not category:
+        return jsonify({"error": "Invalid category"}), 400
 
     query = {'category': category}
     if start_date:

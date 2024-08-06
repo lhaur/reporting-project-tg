@@ -1,6 +1,9 @@
 from mongoengine import Document, StringField, BooleanField, DateTimeField, IntField
 from datetime import datetime
 
+class Category(Document):
+    name = StringField(required=True, unique=True)
+
 class Report(Document):
     reporter = StringField(required=True)
     topic = StringField(required=True)
