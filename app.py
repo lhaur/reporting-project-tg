@@ -114,7 +114,23 @@ def get_reports():
     if not start_date and not end_date and not category_name and not search_query:
         reports = reports.limit(10)
 
-    return reports.to_json()
+    report_list = []
+    for report in reports:
+        report_dict = {
+            "_id": str(report.id),
+            "reporter": report.reporter,
+            "topic": report.topic,
+            "location": report.location,
+            "description": report.description,
+            "category": report.category.name if report.category else None,  # Fetch the category name
+            "urgent": report.urgent,
+            "more_details": report.more_details,
+            "attachments": report.attachments,
+            "timestamp": report.timestamp.isoformat()
+        }
+        report_list.append(report_dict)
+
+    return jsonify(report_list)
 
 
 @app.route('/api/daily_report', methods=['GET'])
