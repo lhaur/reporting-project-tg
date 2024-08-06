@@ -114,14 +114,7 @@ def get_reports():
     if not start_date and not end_date and not category_name and not search_query:
         reports = reports.limit(10)
 
-    reports_data = []
-    for report in reports:
-        report_data = report.to_mongo().to_dict()
-        report_data['_id'] = str(report_data['_id'])
-        report_data['category'] = report_data['category'].name
-        reports_data.append(report_data)
-
-    return jsonify(reports_data)
+    return reports.to_json()
 
 
 @app.route('/api/daily_report', methods=['GET'])
@@ -192,15 +185,7 @@ def get_daily_reports():
 
     daily_reports = DailyReport.objects(**query).order_by('-timestamp')
 
-    reports_data = []
-
-    for report in daily_reports:
-        report_data = report.to_mongo().to_dict()
-        report_data['_id'] = str(report_data['_id'])
-        report_data['category'] = report_data['category'].name
-        reports_data.append(report_data)
-
-    return jsonify(reports_data)
+    return daily_reports.to_json()
 
 @app.route('/api/reports/<report_id>', methods=['GET'])
 def get_report(report_id):
@@ -300,14 +285,7 @@ def get_monthly_reports():
 
     monthly_reports = MonthlyReport.objects(**query).order_by('-timestamp')
 
-    reports_data = []
-    for report in monthly_reports:
-        report_data = report.to_mongo().to_dict()
-        report_data['_id'] = str(report_data['_id'])
-        report_data['category'] = report_data['category'].name
-        reports_data.append(report_data)
-
-    return jsonify(reports_data)
+    return monthly_reports.to_json()
 
 
 @app.route('/api/reports/category/<category_name>', methods=['GET'])
@@ -330,7 +308,7 @@ def get_reports_by_category(category_name):
     reports = Report.objects(**query).order_by('-timestamp')
 
 
-    return reports.to_json(reference=True)
+    return reports.to_json()
 
 @app.route('/api/categories', methods=['GET'])
 def get_categories():
