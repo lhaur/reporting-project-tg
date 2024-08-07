@@ -189,10 +189,10 @@ def get_daily_reports():
     query = {}
     if start_date:
         start_date = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
-        query['start_date__gte'] = start_date
+        query['timestamp__gte'] = start_date
     if end_date:
         end_date = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
-        query['end_date__lte'] = end_date
+        query['timestamp__lte'] = end_date
     if category_name:
         category = Category.objects(name=category_name).first()
         if not category:
