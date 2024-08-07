@@ -422,7 +422,10 @@ def search_reports():
     reports = Report.objects(
         Q(topic__regex=regex) |
         Q(description__regex=regex) |
-        Q(more_details__regex=regex)
+        Q(more_details__regex=regex) |
+        Q(reporter__regex=regex) |
+        Q(location__regex=regex) |
+        Q(category__name__regex=regex)
     ).order_by('-timestamp')
 
     # Serialize reports
