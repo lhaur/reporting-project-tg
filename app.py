@@ -122,7 +122,7 @@ def get_reports():
             "topic": report.topic,
             "location": report.location,
             "description": report.description,
-            "category": report.category.name if report.category else None,  # Fetch the category name
+            "category": report.category.name if report.category else None,
             "urgent": report.urgent,
             "more_details": report.more_details,
             "attachments": report.attachments,
@@ -336,10 +336,10 @@ def get_monthly_reports():
     query = {}
     if start_date:
         start_date = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
-        query['start_date__gte'] = start_date
+        query['timestamp__gte'] = start_date
     if end_date:
         end_date = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
-        query['end_date__lte'] = end_date
+        query['timestamp__lte'] = end_date
     if category_name:
         category = Category.objects(name=category_name).first()
         if not category:
