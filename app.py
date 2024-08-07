@@ -420,14 +420,24 @@ def search_reports():
         __raw__={'$text': {'$search': search_query}}
     ).order_by('-timestamp')
 
-    reports_data = []
+    # Serialize reports
+    report_list = []
     for report in reports:
-        report_dict = report.to_mongo().to_dict()
-        report_dict['_id'] = str(report_dict['_id'])
-        report_dict['category'] = report_dict['category'].id
-        reports_data.append(report_dict)
+        report_dict = {
+            "_id": str(report.id),
+            "reporter": report.reporter,
+            "topic": report.topic,
+            "location": report.location,
+            "description": report.description,
+            "category": report.category.name if report.category else None,  # Fetch the category name
+            "urgent": report.urgent,
+            "more_details": report.more_details,
+            "attachments": report.attachments,
+            "timestamp": report.timestamp.isoformat()
+        }
+        report_list.append(report_dict)
 
-    return jsonify(reports_data)
+    return jsonify(report_list)
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port="8080")
