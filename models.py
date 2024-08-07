@@ -1,4 +1,4 @@
-from mongoengine import Document, StringField, BooleanField, DateTimeField, IntField, ReferenceField
+from mongoengine import Document, StringField, DateTimeField, IntField, ReferenceField
 from datetime import datetime
 
 class Category(Document):

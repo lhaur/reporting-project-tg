@@ -6,7 +6,7 @@ import os
 from datetime import datetime, timedelta
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts.prompt import PromptTemplate
-from mongoengine import connect
+from mongoengine import connect, Q
 from models import Report, DailyReport, MonthlyReport, Category
 
 app = Flask(__name__)
@@ -416,8 +416,13 @@ def search_reports():
     if not search_query:
         return jsonify({"error": "No search query provided"}), 400
 
+    # Muodostetaan säännöllinen lauseke hakusanasta
+    regex = fr'.*{search_query}.*'
+
     reports = Report.objects(
-        __raw__={'$text': {'$search': search_query}}
+        Q(topic__regex=regex, flags='i') |
+        Q(description__regex=regex, flags='i') |
+        Q(more_details__regex=regex, flags='i')
     ).order_by('-timestamp')
 
     # Serialize reports
