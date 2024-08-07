@@ -42,7 +42,7 @@ def process_with_llm(reports_str, language):
         model=os.environ.get("OPENAI_MODEL", "gpt-4o-mini"),
     )
     prompt = PromptTemplate.from_template(
-        "Generate daily report (in language {lang}) from these activities and include also brief summary about day: {reports} If there is no reports, return just something like no reports for that day."
+        "Generate daily report (in language {lang}) from these reports from last 24 hours and include also brief summary about day: {reports} If there is no reports, return just something like no reports for that day."
     )
     question = prompt.format(reports=reports_str, lang=lang_dict[language])
     return llm.invoke(question).content
@@ -53,7 +53,7 @@ def process_monthly_with_llm(reports_str, language):
         model=os.environ.get("OPENAI_MODEL", "gpt-4o-mini"),
     )
     prompt = PromptTemplate.from_template(
-        "Generate monthly report (in language {lang}) from these activities and include also brief summary about day: {reports}. If there is no reports, return just something like no reports for that month."
+        "Generate monthly report (in language {lang}) from these activities and include also brief summary about what happened in last month: {reports}. If there is no reports, return just something like no reports for that month."
     )
     question = prompt.format(reports=reports_str, lang=lang_dict[language])
     return llm.invoke(question).content
@@ -413,38 +413,76 @@ def get_categories():
 @app.route('/api/reports/search', methods=['GET'])
 def search_reports():
     search_query = request.args.get('query')
+    report_type = request.args.get('type', 'all')  # 'all', 'regular', 'daily', or 'monthly'
     
     if not search_query:
         return jsonify({"error": "No search query provided"}), 400
 
     regex = re.compile(fr'.*{re.escape(search_query)}.*', re.IGNORECASE)
 
-    reports = Report.objects(
-        Q(topic__regex=regex) |
-        Q(description__regex=regex) |
-        Q(more_details__regex=regex) |
-        Q(reporter__regex=regex) |
-        Q(location__regex=regex) 
-    ).order_by('-timestamp')
+    results = []
 
-    # Serialize reports
-    report_list = []
-    for report in reports:
-        report_dict = {
-            "_id": str(report.id),
-            "reporter": report.reporter,
-            "topic": report.topic,
-            "location": report.location,
-            "description": report.description,
-            "category": report.category.name if report.category else None,  # Fetch the category name
-            "urgent": report.urgent,
-            "more_details": report.more_details,
-            "attachments": report.attachments,
-            "timestamp": report.timestamp.isoformat()
-        }
-        report_list.append(report_dict)
+    if report_type in ['all', 'regular']:
+        regular_reports = Report.objects(
+            Q(topic__regex=regex) |
+            Q(description__regex=regex) |
+            Q(more_details__regex=regex) |
+            Q(reporter__regex=regex) |
+            Q(location__regex=regex) 
+        ).order_by('-timestamp').limit(10)
 
-    return jsonify(report_list)
+        for report in regular_reports:
+            results.append({
+                "type": "regular",
+                "_id": str(report.id),
+                "reporter": report.reporter,
+                "topic": report.topic,
+                "location": report.location,
+                "description": report.description,
+                "category": report.category.name if report.category else None,
+                "urgent": report.urgent,
+                "more_details": report.more_details,
+                "attachments": report.attachments,
+                "timestamp": report.timestamp.isoformat()
+            })
+
+    if report_type in ['all', 'daily']:
+        daily_reports = DailyReport.objects(
+            Q(summary__regex=regex) |
+            Q(category__name__regex=regex)
+        ).order_by('-timestamp').limit(10)
+
+        for report in daily_reports:
+            results.append({
+                "type": "daily",
+                "_id": str(report.id),
+                "summary": report.summary,
+                "report_count": report.report_count,
+                "start_date": report.start_date.isoformat(),
+                "end_date": report.end_date.isoformat(),
+                "category": report.category.name if report.category else None,
+                "timestamp": report.timestamp.isoformat()
+            })
+
+    if report_type in ['all', 'monthly']:
+        monthly_reports = MonthlyReport.objects(
+            Q(summary__regex=regex) |
+            Q(category__name__regex=regex)
+        ).order_by('-timestamp').limit(10)
+
+        for report in monthly_reports:
+            results.append({
+                "type": "monthly",
+                "_id": str(report.id),
+                "summary": report.summary,
+                "report_count": report.report_count,
+                "start_date": report.start_date.isoformat(),
+                "end_date": report.end_date.isoformat(),
+                "category": report.category.name if report.category else None,
+                "timestamp": report.timestamp.isoformat()
+            })
+
+    return jsonify(results)
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port="8080")
