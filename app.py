@@ -420,6 +420,8 @@ def search_reports():
 
     regex = re.compile(fr'.*{re.escape(search_query)}.*', re.IGNORECASE)
 
+    matching_categories = Category.objects(name__regex=regex)
+
     results = []
 
     if report_type in ['all', 'regular']:
@@ -428,7 +430,8 @@ def search_reports():
             Q(description__regex=regex) |
             Q(more_details__regex=regex) |
             Q(reporter__regex=regex) |
-            Q(location__regex=regex) 
+            Q(location__regex=regex) |
+            Q(category__in=matching_categories)
         ).order_by('-timestamp').limit(10)
 
         for report in regular_reports:
@@ -449,7 +452,7 @@ def search_reports():
     if report_type in ['all', 'daily']:
         daily_reports = DailyReport.objects(
             Q(summary__regex=regex) |
-            Q(category__name__regex=regex)
+            Q(category__in=matching_categories)
         ).order_by('-timestamp').limit(10)
 
         for report in daily_reports:
@@ -467,7 +470,7 @@ def search_reports():
     if report_type in ['all', 'monthly']:
         monthly_reports = MonthlyReport.objects(
             Q(summary__regex=regex) |
-            Q(category__name__regex=regex)
+            Q(category__in=matching_categories)
         ).order_by('-timestamp').limit(10)
 
         for report in monthly_reports:
