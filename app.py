@@ -409,5 +409,25 @@ def get_categories():
     category_names = [category.name for category in categories]
     return jsonify(category_names)
 
+@app.route('/api/reports/search', methods=['GET'])
+def search_reports():
+    search_query = request.args.get('query')
+    
+    if not search_query:
+        return jsonify({"error": "No search query provided"}), 400
+
+    reports = Report.objects(
+        __raw__={'$text': {'$search': search_query}}
+    ).order_by('-timestamp')
+
+    reports_data = []
+    for report in reports:
+        report_dict = report.to_mongo().to_dict()
+        report_dict['_id'] = str(report_dict['_id'])
+        report_dict['category'] = report_dict['category'].id
+        reports_data.append(report_dict)
+
+    return jsonify(reports_data)
+
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port="8080")
