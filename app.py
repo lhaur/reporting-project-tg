@@ -8,6 +8,7 @@ from langchain_openai import ChatOpenAI
 from langchain_core.prompts.prompt import PromptTemplate
 from mongoengine import connect, Q
 from models import Report, DailyReport, MonthlyReport, Category
+import re
 
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
@@ -416,13 +417,12 @@ def search_reports():
     if not search_query:
         return jsonify({"error": "No search query provided"}), 400
 
-    # Muodostetaan säännöllinen lauseke hakusanasta
-    regex = fr'.*{search_query}.*'
+    regex = re.compile(fr'.*{re.escape(search_query)}.*', re.IGNORECASE)
 
     reports = Report.objects(
-        Q(topic__regex=regex, flags='i') |
-        Q(description__regex=regex, flags='i') |
-        Q(more_details__regex=regex, flags='i')
+        Q(topic__regex=regex) |
+        Q(description__regex=regex) |
+        Q(more_details__regex=regex)
     ).order_by('-timestamp')
 
     # Serialize reports
